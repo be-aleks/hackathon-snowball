@@ -19,6 +19,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 @SpringBootApplication
 @RestController
@@ -120,6 +121,38 @@ public class Application {
 
   // private String lastCommand = "F";
   private Boolean wasThrown = false;
+  private final Integer MAX_SNOWBALL_REACH = 3;
+
+  private Boolean checkThrowCondition(PlayerState myState, Map<String, PlayerState> otherState) {
+    switch (myState.direction) {
+        case "N":
+            return !otherState.entrySet()
+                .stream()
+                .filter(s -> s.getValue().x.equals(myState.x) && myState.y - s.getValue().y <= MAX_SNOWBALL_REACH)
+                .collect(Collectors.toList())
+                .isEmpty();
+        case "S":
+            return !otherState.entrySet()
+                .stream()
+                .filter(s -> s.getValue().x.equals(myState.x) && s.getValue().y - myState.y <= MAX_SNOWBALL_REACH)
+                .collect(Collectors.toList())
+                .isEmpty();
+        case "E":
+            return !otherState.entrySet()
+                .stream()
+                .filter(s -> s.getValue().y.equals(myState.y) && s.getValue().x - myState.x <= MAX_SNOWBALL_REACH)
+                .collect(Collectors.toList())
+                .isEmpty();
+        case "W":
+            return !otherState.entrySet()
+                .stream()
+                .filter(s -> s.getValue().y.equals(myState.y) && myState.x - s.getValue().x <= MAX_SNOWBALL_REACH)
+                .collect(Collectors.toList())
+                .isEmpty();
+        default: 
+            return false;
+    }
+  }
 
   @PostMapping("/**")
   public String index(@RequestBody ArenaUpdate arenaUpdate) {
@@ -127,13 +160,15 @@ public class Application {
 
     // arenaUpdate.arena.state.keySet().stream().forEach(System.out::println);
 
+    Self myLink = arenaUpdate._links.self;
+    PlayerState myState = arenaUpdate.arena.state.get(myLink.href);
+    arenaUpdate.arena.state.remove(myLink.href);
+
     writeCommittedStream.send(arenaUpdate.arena);
     
-    if (!this.wasThrown) {
-        this.wasThrown = !this.wasThrown;
+    if (checkThrowCondition(myState, arenaUpdate.arena.state)) {
         return "T";
     } else {
-        this.wasThrown = !this.wasThrown;
         return "R";
     }
 
