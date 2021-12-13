@@ -169,12 +169,10 @@ public class Application {
     if (checkThrowCondition(myState, arenaUpdate.arena.state)) {
         return "T";
     } else {
-        return "R";
+        String[] commands = new String[]{"F", "R", "L"};
+        int i = new Random().nextInt(3);
+        return commands[i];
     }
-
-    // String[] commands = new String[]{"F", "R", "L", "T"};
-    // int i = new Random().nextInt(4);
-    // return commands[i];
   }
 
 }
