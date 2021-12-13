@@ -56,16 +56,11 @@ public class Application {
   // private String lastCommand = "F";
   private Boolean wasThrown = false;
 
-  private Boolean canAvoid() {
-
-    
-  }
-
   @PostMapping("/**")
   public String index(@RequestBody ArenaUpdate arenaUpdate) {
     System.out.println(arenaUpdate);
 
-    arenaUpdate.arena.state.keySet().stream().forEach(System.out::println);
+    // arenaUpdate.arena.state.keySet().stream().forEach(System.out::println);
     
     if (!this.wasThrown) {
         this.wasThrown = !this.wasThrown;
